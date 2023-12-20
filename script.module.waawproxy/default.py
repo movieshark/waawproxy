@@ -33,13 +33,17 @@ if __name__ == "__main__":
     li = xbmcgui.ListItem()
     helper = Helper("hls")
     if helper.check_inputstream():
-        li.setProperty("inputstream", "inputstream.adaptive")
+        KODI_VERSION_MAJOR = int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0])
+        if KODI_VERSION_MAJOR >= 19:
+            li.setProperty("inputstreamaddon", "inputstream.adaptive")
+        else:
+            li.setProperty("inputstream", "inputstream.adaptive")
         li.setProperty("inputstream.adaptive.manifest_type", "hls")
         li.setProperty("inputstream.adaptive.stream_headers", headers)
         li.setProperty("inputstream.adaptive.manifest_headers", headers)
         li.setMimeType("application/vnd.apple.mpegurl")
         li.setContentLookup(False)
-        if int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0]) < 20:
+        if KODI_VERSION_MAJOR < 20:
             xbmcgui.Window(10000).setProperty("waawproxy.url", video_url.split("|")[0])
             li.setPath("http://localhost:16969/stream.m3u8" + "|" + headers)
         else:
