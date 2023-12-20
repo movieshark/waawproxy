@@ -1,14 +1,14 @@
 import threading
+from re import sub
 from socketserver import ThreadingMixIn
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer, make_server
-from bottle import default_app, hook, request, response, route
+
 import requests
-from re import sub
-
-import xbmcgui
 import xbmc
+import xbmcgui
+from bottle import default_app, hook, request, response, route
 
-app_name = "Waawproxy/0.7"
+app_name = "Waawproxy/0.7.0"
 
 
 class SilentWSGIRequestHandler(WSGIRequestHandler):
@@ -41,7 +41,7 @@ def set_server_header():
 @route("/")
 def index():
     response.content_type = "text/plain"
-    return f"Welcome to {app_name}"
+    return "Welcome to %s" % app_name
 
 
 @route("/stream.m3u8")
@@ -56,7 +56,6 @@ def get_url():
     }
     resp = requests.get(url(), headers=headers)
     content = resp.text
-    # replace line #EXTM3U with #EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=4364913,AVERAGE-BANDWIDTH=4277405,CODECS="avc1.4D4028,mp4a.40.2",RESOLUTION=1920x1080,AUDIO="AUDIO",FRAME-RATE=24
     content = content.replace(
         "#EXTM3U",
         '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=4364913,AVERAGE-BANDWIDTH=4277405,CODECS="avc1.4D4028,mp4a.40.2",RESOLUTION=1920x1080,AUDIO="AUDIO",FRAME-RATE=24',
@@ -72,45 +71,6 @@ def get_url():
     return content
 
 
-# catchall route to serve media chunks
-# @route("/<path:path>")
-# def get_media(path):
-#     headers = {
-#         "User-Agent": request.headers.get("User-Agent"),
-#         "Referer": request.headers.get("Referer"),
-#         "Origin": request.headers.get("Origin"),
-#     }
-#     url = (
-#         request.app.url.rsplit("/", 1)[0]
-#         + "/"
-#         + path.replace(".ts", ".mp666")
-#     )
-#     xbmc.log("[%s] Requesting %s" % (app_name, url), xbmc.LOGERROR)
-#     xbmc.log(
-#         "curl -H 'User-Agent: %s' -H 'Referer: %s' -H 'Origin: %s' '%s'"
-#         % (
-#             headers["User-Agent"],
-#             headers["Referer"],
-#             headers["Origin"],
-#             request.url,
-#         ),
-#         xbmc.LOGERROR,
-#     )
-#     resp = requests.get(
-#         url,
-#         headers=headers,
-#         timeout=30,
-#         stream=True,
-#     )
-#     # ts
-#     response.content_type = "video/mp2t"
-#     response.status = resp.status_code
-#     xbmc.log("[%s] Got %s" % (app_name, resp.status_code), xbmc.LOGERROR)
-#     xbmc.log("[%s] Headers %s" % (app_name, resp.headers), xbmc.LOGERROR)
-#     for chunk in resp.iter_content(chunk_size=1024):
-#         yield chunk
-
-
 @route("/<path:path>")
 def get_media(path):
     if not url():
@@ -124,7 +84,7 @@ def get_media(path):
 
 
 class WebServerThread(threading.Thread):
-    def __init__(self, httpd: WSGIServer):
+    def __init__(self, httpd):
         threading.Thread.__init__(self)
         self.web_killed = threading.Event()
         self.httpd = httpd
@@ -139,7 +99,6 @@ class WebServerThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    # check if we are running on Kodi 20 or higher
     if int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0]) >= 20:
         xbmc.log(
             "[%s] No need to run webserver, Kodi 20+ supports HLS properly" % app_name,

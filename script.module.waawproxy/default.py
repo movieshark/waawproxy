@@ -1,6 +1,8 @@
-import xbmcgui
-import xbmc
 from sys import argv
+
+import xbmc
+import xbmcgui
+from inputstreamhelper import Helper
 from xbmcaddon import Addon
 from xbmcplugin import setResolvedUrl
 
@@ -25,19 +27,28 @@ if __name__ == "__main__":
     if not video_url:
         dialog = xbmcgui.Dialog()
         dialog.ok(
-            addon_name, "No URL provided[CR]" "Call this using %s/?url=<url>" % argv[0]
+            addon_name, "No URL provided[CR]Call this using %s/?url=<url>" % argv[0]
         )
     headers = video_url.split("|")[1]
     li = xbmcgui.ListItem()
-    li.setProperty("inputstream", "inputstream.adaptive")
-    li.setProperty("inputstream.adaptive.manifest_type", "hls")
-    li.setProperty("inputstream.adaptive.stream_headers", headers)
-    li.setProperty("inputstream.adaptive.manifest_headers", headers)
-    li.setMimeType("application/vnd.apple.mpegurl")
-    li.setContentLookup(False)
-    if int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0]) < 20:
-        xbmcgui.Window(10000).setProperty("waawproxy.url", video_url.split("|")[0])
-        li.setPath("http://localhost:16969/stream.m3u8" + "|" + headers)
+    helper = Helper("hls")
+    if helper.check_inputstream():
+        li.setProperty("inputstream", "inputstream.adaptive")
+        li.setProperty("inputstream.adaptive.manifest_type", "hls")
+        li.setProperty("inputstream.adaptive.stream_headers", headers)
+        li.setProperty("inputstream.adaptive.manifest_headers", headers)
+        li.setMimeType("application/vnd.apple.mpegurl")
+        li.setContentLookup(False)
+        if int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0]) < 20:
+            xbmcgui.Window(10000).setProperty("waawproxy.url", video_url.split("|")[0])
+            li.setPath("http://localhost:16969/stream.m3u8" + "|" + headers)
+        else:
+            li.setPath(video_url)
+        setResolvedUrl(int(argv[1]), True, li)
     else:
-        li.setPath(video_url)
-    setResolvedUrl(int(argv[1]), True, li)
+        dialog = xbmcgui.Dialog()
+        dialog.ok(
+            addon_name,
+            "Inputstream.adaptive is not installed.[CR]"
+            "Please install it from the official Kodi repository.",
+        )
