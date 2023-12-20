@@ -52,3 +52,4 @@ if __name__ == "__main__":
             "Inputstream.adaptive is not installed.[CR]"
             "Please install it from the official Kodi repository.",
         )
+        setResolvedUrl(int(argv[1]), False, li)
