@@ -12,7 +12,7 @@ import xbmc
 import xbmcgui
 from bottle import default_app, hook, request, response, route
 
-app_name = "Waawproxy/0.7.0"
+app_name = "Waawproxy/0.7.1"
 
 
 class SilentWSGIRequestHandler(WSGIRequestHandler):
@@ -81,7 +81,7 @@ def get_media(path):
         response.status = 500
         return "No URL set"
     media_url = url().rsplit("/", 1)[0] + "/" + path.replace(".ts", ".mp666")
-    xbmc.log("[%s] Redirecting to %s" % (app_name, media_url), xbmc.LOGERROR)
+    xbmc.log("[%s] Redirecting to %s" % (app_name, media_url), xbmc.LOGINFO)
     response.status = 302
     response.set_header("Location", media_url)
     return
@@ -92,7 +92,7 @@ class WebServerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.web_killed = threading.Event()
         self.httpd = httpd
-        xbmc.log("[%s] Web server thread initialized" % app_name, xbmc.LOGERROR)
+        xbmc.log("[%s] Web server thread initialized" % app_name, xbmc.LOGINFO)
 
     def run(self):
         while not self.web_killed.is_set():
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     if int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0]) >= 20:
         xbmc.log(
             "[%s] No need to run webserver, Kodi 20+ supports HLS properly" % app_name,
-            xbmc.LOGERROR,
+            xbmc.LOGINFO,
         )
         exit(0)
     app = default_app()
@@ -136,10 +136,10 @@ if __name__ == "__main__":
         raise
     web_thread = WebServerThread(httpd)
     web_thread.start()
-    xbmc.log("[%s] Web server started" % app_name, xbmc.LOGERROR)
+    xbmc.log("[%s] Web server started" % app_name, xbmc.LOGINFO)
     monitor = xbmc.Monitor()
     while not monitor.abortRequested():
         xbmc.sleep(100)
-    xbmc.log("[%s] Exiting webserver" % app_name, xbmc.LOGERROR)
+    xbmc.log("[%s] Exiting webserver" % app_name, xbmc.LOGINFO)
     web_thread.stop()
     web_thread.join()
