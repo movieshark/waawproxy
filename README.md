@@ -15,7 +15,11 @@ Note: You will need to install the `resolveurl` addon for this to work.
 ```py
 import xbmcgui
 import resolveurl
-from urllib.parse import parse_qsl, urlencode
+try:
+    from urllib.parse import parse_qsl, urlencode
+except ImportError:
+    from urlparse import parse_qsl
+    from urllib import urlencode
 from sys import argv
 import xbmcplugin
 
@@ -28,6 +32,7 @@ if __name__ == "__main__":
         li = xbmcgui.ListItem("Test")
         li.setContentLookup(False)
         li.setProperty("IsPlayable", "true")
+        li.setInfo("video", {"title": "Test"})
         url = "plugin://script.module.waawproxy/?" + urlencode(
             {"url": direct_url}
         )
