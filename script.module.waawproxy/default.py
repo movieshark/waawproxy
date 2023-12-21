@@ -35,9 +35,9 @@ if __name__ == "__main__":
     if helper.check_inputstream():
         KODI_VERSION_MAJOR = int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0])
         if KODI_VERSION_MAJOR >= 19:
-            li.setProperty("inputstreamaddon", "inputstream.adaptive")
-        else:
             li.setProperty("inputstream", "inputstream.adaptive")
+        else:
+            li.setProperty("inputstreamaddon", "inputstream.adaptive")
         li.setProperty("inputstream.adaptive.manifest_type", "hls")
         li.setProperty("inputstream.adaptive.stream_headers", headers)
         li.setProperty("inputstream.adaptive.manifest_headers", headers)
