@@ -1,6 +1,10 @@
 import threading
 from re import sub
-from socketserver import ThreadingMixIn
+
+try:
+    from socketserver import ThreadingMixIn
+except ImportError:
+    from SocketServer import ThreadingMixIn
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer, make_server
 
 import requests
